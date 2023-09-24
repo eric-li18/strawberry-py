@@ -4,12 +4,8 @@ from sqlalchemy.orm import Session
 from backend import crud, schemas
 from .util import get_db
 
-router = APIRouter()
 
-
-@router.get("/{item_id}/", response_model=schemas.Item)
 def get_item(
-    db: Session = Depends(get_db),
     item_id: int = Path(..., title="ID of item to get", ge=1),
 ):
     item = crud.item.get(db, item_id)
@@ -20,18 +16,15 @@ def get_item(
     return item
 
 
-@router.get("/", response_model=List[schemas.Item])
-def get_items(
-    db: Session = Depends(get_db),
-    limit: int = Query(None, title="Upper limit of records returned", ge=1),
-):
+def get_items():
+    db = get_db()
+    limit = 3
     items = crud.item.get_multi(db, limit)
     if not items:
         raise HTTPException(status_code=404, detail=f"Database is empty.")
     return items
 
 
-@router.post("/", response_model=schemas.Item)
 def create_item(
     db: Session = Depends(get_db),
     item: schemas.ItemCreate = Body(..., title="Item to be created."),
@@ -40,7 +33,6 @@ def create_item(
     return created_item
 
 
-@router.delete("/{item_id}/", response_model=schemas.Item)
 def remove_item(
     db: Session = Depends(get_db),
     item_id: int = Path(..., title="ID of item to delete."),
@@ -54,7 +46,6 @@ def remove_item(
     return item
 
 
-@router.patch("/", response_model=schemas.ItemUpdate)
 def update_item(
     db: Session = Depends(get_db),
     item: schemas.ItemUpdate = Body(..., title="Item fields to update."),

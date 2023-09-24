@@ -1,10 +1,10 @@
-from typing import Generator
 from backend.db.session import SessionLocal
+from strawberry.extensions import Extension
 
 
-def get_db() -> Generator:
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
+class SQLAlchemySession(Extension):
+    def on_request_start(self):
+        self.execution_context.context["db"] = SessionLocal()
+
+    def on_request_end(self):
+        self.execution_context.context["db"].close()
